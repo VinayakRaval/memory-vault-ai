@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+backend/dist/
+backend/build/
+*.exe
+*.asar
+__pycache__/
+venv/
+.env

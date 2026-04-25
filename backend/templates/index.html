@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Vault AI | Intelligence System</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg: #f4f7ff;
+            --card: #ffffff;
+            --text: #0f172a;
+            --accent: #0066ff;
+            --sidebar-grad: linear-gradient(180deg, #0052e0, #0066ff, #0052e0);
+            --danger: #dc2626;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Inter", sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            background: var(--sidebar-grad);
+            padding: 30px 18px;
+            color: #fff;
+            border-top-right-radius: 26px;
+            border-bottom-right-radius: 26px;
+            box-shadow: 8px 0 32px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff !important;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .nav-link-custom:hover {
+            background: rgba(255, 255, 255, .25);
+            transform: translateX(6px);
+        }
+
+        .nav-active {
+            background: rgba(255, 255, 255, .35);
+            transform: translateX(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1.2px;
+            margin: 25px 0 10px 10px;
+            font-weight: 700;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
+
+        .header-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, .08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .vault-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .06);
+            border: none;
+            margin-bottom: 30px;
+        }
+
+        .repo-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: var(--card);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            align-items: center;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+            transition: transform 0.3s ease;
+            border-left: 5px solid var(--accent);
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card h6 { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px; }
+        
+        .table-container {
+            background: var(--card);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .06);
+        }
+        .card-header-custom { background: var(--accent); color: white; padding: 18px 25px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse;}
+        th { padding: 18px; background: #f8faff; font-weight: 700; border-bottom: 1px solid #eee; }
+        td { padding: 18px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
+        .file-item-row:hover { background: #f8faff; transition: 0.2s; }
+
+        .btn-view {
+            background: var(--accent); color: white; border: none;
+            padding: 8px 20px; border-radius: 12px; font-weight: 700;
+            font-size: 0.85rem; transition: 0.3s;
+        }
+        .btn-view:hover { background: #0052e0; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3); }
+
+        #viewerModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.9); z-index:2000; }
+        .modal-body-custom { 
+            width: 85%; margin: 40px auto; background: white; padding: 35px; border-radius: 24px; 
+            max-height: 85vh; overflow-y: auto; position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>VAULT AI</h2>
+    <div class="nav-section-label">Core System</div>
+    <div class="nav-group">
+        <button id="btn-dashboard" class="nav-link-custom nav-active" onclick="showTab('dashboard')"><i class="fa fa-house"></i> Dashboard</button>
+        <button id="btn-files" class="nav-link-custom" onclick="showTab('files')"><i class="fa fa-folder"></i> Repository</button>
+        <button id="btn-recent" class="nav-link-custom" onclick="showTab('recent')"><i class="fa fa-clock"></i> Recent</button>
+        <button id="btn-duplicates" class="nav-link-custom" onclick="showTab('duplicates')"><i class="fa fa-copy"></i> Duplicates</button>
+        <button id="btn-malware" class="nav-link-custom" onclick="showTab('malware')"><i class="fa fa-virus"></i> Malware</button>
+    </div>
+    <div class="nav-section-label">File Categories</div>
+    <div id="dynamic-nav" class="nav-group"></div>
+</div>
+
+<div class="main">
+    <div class="header-card">
+        <div>
+            <h2 class="mb-0" id="navTitle">Control Center</h2>
+            <p class="mb-0 text-muted" id="liveClock">Loading Date & Time...</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end">
+                <p class="mb-0 fw-bold">Administrator</p>
+                <span class="badge bg-primary">AI Sync Enabled</span>
+            </div>
+            <div style="width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; border: 3px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">VA</div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="tab-content">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h6>Total Files</h6>
+                    <p id="totalFiles" style="font-size: 2.2rem; font-weight: 800; margin: 0;">0</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h6>Duplicate Sets Found</h6>
+                    <p id="duplicateCount" style="font-size: 2.2rem; font-weight: 800; margin: 0; color: var(--danger);">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="vault-card">
+            <h5 class="fw-bold mb-3"><i class="fa fa-microchip text-primary me-2"></i> Neural Scanner</h5>
+            <div class="input-group">
+                <input type="text" id="pathInput" class="form-control form-control-lg" placeholder="Select directory path..." style="border-radius: 15px 0 0 15px;">
+                <button class="btn btn-primary px-4" onclick="scanFolder()" style="border-radius: 0 15px 15px 0; font-weight: 700;">INITIALIZE SCAN</button>
+            </div>
+            <div id="scanProgress" style="display:none; margin-top: 30px;">
+                <div class="d-flex justify-content-between mb-2">
+                    <span id="statusLabel" class="fw-bold text-primary">Scanning neural pathways...</span>
+                    <span id="percentLabel" class="fw-bold">0%</span>
+                </div>
+                <div class="progress-wrapper" style="height: 10px; background: #eee; border-radius: 10px; overflow: hidden;">
+                    <div id="progressBar" class="progress-fill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.4s ease;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="vault-card">
+            <h5 class="fw-bold mb-4">Storage Distribution</h5>
+            <canvas id="fileChart" style="max-height: 280px;"></canvas>
+        </div>
+    </div>
+
+    <div id="listView" class="tab-content" style="display:none;">
+        <div class="repo-controls" id="repoControls">
+            <div class="input-group" style="flex: 2;">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="fa fa-search text-muted"></i></span>
+                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search files..." onkeyup="handleSearch()" style="border-radius: 0 12px 12px 0;">
+            </div>
+            
+            <div id="bulkActions" style="display: none;" class="d-flex gap-2">
+                <button onclick="deleteSelected()" class="btn btn-danger fw-bold rounded-pill px-3">
+                    <i class="fa fa-trash"></i> Delete Selected
+                </button>
+                <button onclick="deleteAll()" class="btn btn-outline-danger fw-bold rounded-pill px-3">
+                    <i class="fa fa-warning"></i> Purge All Duplicates
+                </button>
+            </div>
+
+            <div style="flex: 1;" id="sortContainer">
+                <select id="sortSelect" class="form-select" onchange="handleSort()" style="border-radius: 12px;">
+                    <option value="newest">Sort: Newest First</option>
+                    <option value="impHigh">Sort: Highest Importance</option>
+                    <option value="impLow">Sort: Lowest Importance</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <span id="listSubTitle">Intelligence Records</span>
+                <span class="badge bg-white text-primary rounded-pill px-3" id="pageInfo">Page 1</span>
+            </div>
+            <div class="p-0">
+                <table class="table mb-0">
+                    <thead id="tableHeader"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div class="p-3 bg-light d-flex justify-content-between" id="paginationBox">
+                <button class="btn btn-light fw-bold" onclick="changePage(-1)"><i class="fa fa-arrow-left"></i> Previous</button>
+                <button class="btn btn-light fw-bold" onclick="changePage(1)">Next <i class="fa fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="viewerModal">
+    <div class="modal-body-custom shadow-lg">
+        <button onclick="closeViewer()" class="btn btn-danger btn-sm" style="position: absolute; right: 25px; top: 25px; border-radius: 12px;">✕ Close</button>
+        <h4 id="viewerTitle" class="fw-bold text-primary mb-4">Preview</h4>
+        <div id="viewerContent" class="mt-2"></div>
+    </div>
+</div>
+
+<script>
+const API = "http://127.0.0.1:5000";
+let allFiles = [];
+let currentTab = 'dashboard';
+let myChart = null;
+let currentPage = 1;
+const pageSize = 25;
+let filteredData = [];
+let displayData = [];
+let selectedHashes = new Set();
+
+function escapeHtml(text) {
+    if (!text) return "";
+    return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function updateClock() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    document.getElementById('liveClock').innerText = now.toLocaleDateString('en-US', options);
+}
+setInterval(updateClock, 1000);
+
+function showTab(tab){
+    currentTab = tab;
+    currentPage = 1;
+    selectedHashes.clear();
+    
+    document.querySelectorAll('.nav-link-custom').forEach(btn => btn.classList.remove('nav-active'));
+    const activeBtn = document.getElementById(`btn-${tab}`);
+    if(activeBtn) activeBtn.classList.add('nav-active');
+    
+    document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+
+    if(tab === 'dashboard'){
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('navTitle').innerText = "Control Center";
+        loadStats(); 
+    } else {
+        document.getElementById('listView').style.display = 'block';
+        document.getElementById('navTitle').innerText = tab.toUpperCase().replace('-', ' ');
+        renderTable();
+    }
+}
+
+async function loadData(){
+    try{
+       const res = await fetch(`${API}/files`);
+       allFiles = await res.json();
+       updateSidebar();
+       if(currentTab !== 'dashboard') renderTable();
+       loadStats();
+    }catch(e){ console.error("API Offline"); }
+}
+
+async function loadStats(){
+    try {
+        const resFiles = await fetch(`${API}/files`);
+        const filesData = await resFiles.json();
+        document.getElementById("totalFiles").innerText = filesData.length;
+        const resDups = await fetch(`${API}/duplicates`);
+        const dupsData = await resDups.json();
+        document.getElementById("duplicateCount").innerText = dupsData.length;
+        drawChart(filesData);
+    } catch(e) {}
+}
+
+function drawChart(files){
+    const types = {};
+    files.forEach(f => {
+        const t = (f.type || "unknown").toUpperCase();
+        types[t] = (types[t] || 0) + 1;
+    });
+    const ctx = document.getElementById('fileChart').getContext('2d');
+    if(myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(types),
+            datasets: [{ label: 'Quantity', data: Object.values(types), backgroundColor: '#0066ff', borderRadius: 10 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function renderTable(){
+    const head = document.getElementById('tableHeader');
+    const body = document.getElementById('tableBody');
+    const bulk = document.getElementById('bulkActions');
+    const repoCtrl = document.getElementById('repoControls');
+    const pagin = document.getElementById('paginationBox');
+    const sortCtrl = document.getElementById('sortContainer');
+
+    if (bulk) bulk.style.setProperty('display', 'none', 'important');
+    repoCtrl.style.display = 'flex';
+    pagin.style.display = 'flex';
+    if(sortCtrl) sortCtrl.style.display = 'block';
+
+    if(currentTab === 'malware'){
+        repoCtrl.style.display = 'none';
+        pagin.style.display = 'none';
+        
+        // NEW IMPROVED HEADER
+        head.innerHTML = `
+        <tr>
+            <th>#</th>
+            <th>File</th>
+            <th>Malware Type</th>
+            <th>Severity</th>
+            <th>Reason</th>
+            <th>Action</th>
+        </tr>`;
+
+        fetch(`${API}/malware`).then(res=>res.json()).then(data=>{
+            body.innerHTML = data.map((f,i)=>{
+                // PRO ICON BONUS
+                const iconMap = {
+                    "Ransomware": "💰",
+                    "Backdoor": "🔓",
+                    "Trojan": "🐴",
+                    "Keylogger": "⌨️",
+                    "Downloader": "⬇️"
+                };
+                const malwareIcon = iconMap[f.malware_type] || "⚠️";
+
+                return `
+                <tr>
+                    <td>${i+1}</td>
+                    <td class="fw-bold text-danger">
+                        <i class="fa fa-virus"></i> ${f.name}
+                    </td>
+                    <td>
+                        <span class="badge bg-dark">${malwareIcon} ${f.malware_type || "Unknown"}</span>
+                    </td>
+                    <td>
+                        <span class="badge ${
+                            f.malware_severity === "High" ? "bg-danger" :
+                            f.malware_severity === "Medium" ? "bg-warning text-dark" :
+                            "bg-success"
+                        }">
+                            ${f.malware_severity || "Safe"}
+                        </span>
+                    </td>
+                    <td class="small">${f.malware_reason || "Heuristic Detection"}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteFile(${f.id})">DELETE</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        });
+        return;
+    }
+
+    if(currentTab === 'duplicates') {
+        if (bulk) bulk.style.setProperty('display', 'flex', 'important'); 
+        if (sortCtrl) sortCtrl.style.display = 'none';
+        pagin.style.display = 'none';
+        loadDuplicates();
+        return;
+    }
+
+    if(currentTab === 'recent'){
+        head.innerHTML = `<tr><th>#</th><th>Asset Name</th><th>Type</th><th>Last Viewed</th><th>Action</th></tr>`;
+        filteredData = allFiles.filter(f=>f.last_opened).sort((a,b)=>new Date(b.last_opened)-new Date(a.last_opened));
+    } else {
+        head.innerHTML = `<tr><th>#</th><th>Asset Name</th><th>Type</th><th>Scanned On</th><th>Importance</th><th>Action</th></tr>`;
+        filteredData = (currentTab === 'files') ? [...allFiles] : allFiles.filter(f => (f.type||"").toLowerCase() === currentTab);
+    }
+    
+    displayData = [...filteredData];
+    handleSort();
+    updateTableBody();
+}
+
+function updateTableBody() {
+    const body = document.getElementById('tableBody');
+    const start = (currentPage - 1) * pageSize;
+    const pageData = displayData.slice(start, start + pageSize);
+    const totalPages = Math.ceil(displayData.length/pageSize) || 1;
+    document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+
+    body.innerHTML = pageData.map((f, i) => {
+        const sn = start + i + 1;
+        const score = Math.round((f.importance||0)*100);
+        let impClass = score > 80 ? 'success' : (score > 40 ? 'primary' : 'warning');
+        const dateStr = f.created_at ? new Date(f.created_at).toLocaleString() : "N/A";
+
+        let extraCol = currentTab === 'recent' ? 
+            `<td><span class="text-primary fw-bold">${new Date(f.last_opened).toLocaleString()}</span></td>` : 
+            `<td>${dateStr}</td><td><span class="badge bg-${impClass}">${score}%</span></td>`;
+
+        return `<tr class="file-item-row">
+            <td>${sn}</td>
+            <td class="fw-bold text-truncate" style="max-width: 250px;">${f.name}</td>
+            <td><span class="badge bg-secondary rounded-pill">${(f.type||'UNK').toUpperCase()}</span></td>
+            ${extraCol}
+            <td><button class="btn-view" onclick="openFile(${f.id})">VIEW</button></td>
+        </tr>`;
+    }).join('');
+}
+
+async function loadDuplicates(){
+    const res = await fetch(`${API}/duplicates`);
+    const data = await res.json();
+    const head = document.getElementById('tableHeader');
+    const body = document.getElementById('tableBody');
+
+    head.innerHTML = `<tr><th><input type="checkbox" onclick="toggleAll(this)"></th><th>#</th><th>Name</th><th>Copies</th><th>Reason</th></tr>`;
+    body.innerHTML = data.map((f, i)=>`
+        <tr>
+            <td><input type="checkbox" class="dup-check" onchange="selectHash('${f.hash}', this)" ${selectedHashes.has(f.hash) ? 'checked' : ''}></td>
+            <td>${i+1}</td>
+            <td class="fw-bold">${f.name}</td>
+            <td><span class="badge bg-danger">${f.copies} Copies</span></td>
+            <td class="small text-muted">${f.reason}</td>
+        </tr>
+    `).join('');
+    document.getElementById("duplicateCount").innerText = data.length;
+}
+
+function selectHash(hash, checkbox){
+    if(checkbox.checked) selectedHashes.add(hash);
+    else selectedHashes.delete(hash);
+}
+
+function toggleAll(master){
+    document.querySelectorAll(".dup-check").forEach(cb=>{
+        cb.checked = master.checked;
+        const match = cb.getAttribute('onchange').match(/'([^']+)'/);
+        const hash = match ? match[1] : null;
+        if(master.checked && hash) selectedHashes.add(hash);
+        else if(hash) selectedHashes.delete(hash);
+    });
+}
+
+async function deleteSelected(){
+    if(selectedHashes.size === 0) return alert("Please select at least one duplicate set.");
+    if(!confirm(`Are you sure you want to delete redundant copies for ${selectedHashes.size} items?`)) return;
+
+    try {
+        await fetch(`${API}/clean-selected-duplicates`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ hashes: Array.from(selectedHashes) })
+        });
+        alert("Cleanup complete.");
+        selectedHashes.clear();
+        loadData();
+    } catch(e) { alert("Error during deletion."); }
+}
+
+async function deleteAll(){
+    if(!confirm("DANGER: This will delete ALL redundant duplicates in your system. Proceed?")) return;
+    try {
+        const res = await fetch(`${API}/duplicates`);
+        const data = await res.json();
+        const hashes = data.map(d => d.hash);
+
+        await fetch(`${API}/clean-selected-duplicates`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({hashes})
+        });
+
+        alert("System purged of all duplicates.");
+        loadData();
+    } catch(e) { alert("Error during purge."); }
+}
+
+function handleSearch() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    displayData = filteredData.filter(f => f.name.toLowerCase().includes(term));
+    currentPage = 1;
+    updateTableBody();
+}
+
+function handleSort() {
+    const val = document.getElementById('sortSelect').value;
+    if (val === 'newest') displayData.sort((a, b) => b.id - a.id);
+    else if (val === 'impHigh') displayData.sort((a, b) => (b.importance || 0) - (a.importance || 0));
+    else if (val === 'impLow') displayData.sort((a, b) => (a.importance || 0) - (b.importance || 0));
+    updateTableBody();
+}
+
+function changePage(dir) {
+    const totalPages = Math.ceil(displayData.length/pageSize) || 1;
+    if(currentPage + dir >= 1 && currentPage + dir <= totalPages) { 
+        currentPage += dir; 
+        updateTableBody(); 
+    }
+}
+
+async function openFile(id){
+    const res = await fetch(`${API}/open/${id}`);
+    const data = await res.json();
+    document.getElementById("viewerTitle").innerText = data.name;
+    document.getElementById("viewerModal").style.display = "block";
+    const content = document.getElementById("viewerContent");
+    
+    if(data.type === "text") content.innerHTML = `<div class="bg-dark p-4 rounded text-success" style="font-family: monospace; overflow-x: auto;"><pre>${escapeHtml(data.content)}</pre></div>`;
+    else if(["pdf", "html"].includes(data.type)) content.innerHTML = `<iframe src="${API}/file?path=${encodeURIComponent(data.path)}" style="width:100%;height:60vh;border-radius:15px;"></iframe>`;
+    else if(data.type === "image") content.innerHTML = `<img src="${API}/file?path=${encodeURIComponent(data.path)}" class="img-fluid rounded shadow-lg d-block mx-auto">`;
+    else content.innerHTML = `<div class="alert alert-primary">Binary data preview restricted.</div>`;
+    
+    setTimeout(loadData, 500);
+}
+
+function updateSidebar(){
+    const types = [...new Set(allFiles.map(f => (f.type||"unknown").toLowerCase()))];
+    document.getElementById('dynamic-nav').innerHTML = types.map(t=>`
+        <button class="nav-link-custom" onclick="showType('${t}')"><i class="fa fa-file-medical"></i> ${t.toUpperCase()}</button>
+    `).join('');
+}
+
+function showType(type){
+    currentPage = 1; currentTab = type;
+    document.getElementById('navTitle').innerText = type.toUpperCase() + " DATA REPOSITORY";
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('listView').style.display = 'block';
+    renderTable();
+}
+
+async function scanFolder(){
+    const path = document.getElementById('pathInput').value;
+    if(!path) return;
+    document.getElementById('scanProgress').style.display='block';
+
+    await fetch(`${API}/scan`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({path})
+    });
+
+    const interval = setInterval(async () => {
+        const res = await fetch(`${API}/progress`);
+        const p = await res.json();
+        document.getElementById('progressBar').style.width = p.percent + "%";
+        document.getElementById('percentLabel').innerText = p.percent + "%";
+        
+        function formatTime(sec){
+            if(!sec || sec <= 0) return "0s";
+            if(sec < 60) return sec + "s";
+            return Math.floor(sec/60) + "m " + (sec%60) + "s";
+        }
+
+        document.getElementById('statusLabel').innerText = `📂 ${p.current}/${p.total} | ⚡ ${p.speed} f/s | ⏳ ETA: ${formatTime(p.eta)}`;
+
+        if(p.percent >= 100){
+            clearInterval(interval);
+            document.getElementById('statusLabel').innerText = "✅ Scan Completed";
+            loadData();
+        }
+    }, 800);
+}
+
+async function deleteFile(id) {
+    if(!confirm("Are you sure you want to delete this threat?")) return;
+    try {
+        await fetch(`${API}/delete/${id}`, { method: 'DELETE' });
+        loadData();
+    } catch(e) { alert("Error deleting file."); }
+}
+
+function closeViewer(){ document.getElementById("viewerModal").style.display="none"; }
+window.onload = () => { loadData(); updateClock(); };
+</script>
+</body>
+</html>

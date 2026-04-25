@@ -1,0 +1,38 @@
+{
+  "name": "memory-vault",
+  "version": "1.0.0",
+  "description": "Memory Vault AI Desktop App",
+  "author": "Vinu",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.memoryvault.ai",
+    "productName": "Memory Vault AI",
+
+    "files": [
+      "electron/**/*",
+      "backend/dist/**/*",
+      "backend/templates/**/*"
+    ],
+
+    "asar": true,
+
+    "win": {
+      "target": "nsis",
+      "sign": false
+    },
+
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.3.0",
+    "electron-builder": "^26.8.1"
+  }
+}
